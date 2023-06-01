@@ -1,23 +1,15 @@
 ---
-Language: Cpp
-BasedOnStyle: Mozilla
-ColumnLimit: 116
-SpacesInParentheses: true
-AlwaysBreakAfterReturnType: None
-AlwaysBreakAfterDefinitionReturnType: None
-SpaceBeforeCpp11BracedList: true
-BreakBeforeBinaryOperators: All
-Cpp11BracedListStyle: true
-AllowShortBlocksOnASingleLine: Always
-BreakBeforeBraces: Custom
-BraceWrapping:
-  AfterClass: true
-  AfterControlStatement: Never
-  AfterFunction: true
-  AfterStruct: true
-  AfterEnum: true
-  SplitEmptyFunction: false
-  SplitEmptyRecord: false
-  SplitEmptyNamespace: false
-PackConstructorInitializers: NextLine
+Language:        Cpp
+# Use 2 spaces for indentation
+IndentWidth:     2
+# Use spaces instead of tabs
+UseTab:          Never
+# Indent namespace contents
+NamespaceIndentation: All
+# Indent case labels inside switch statements
+IndentCaseLabels: true
+# Add a space between the function name and the opening parenthesis
+SpaceBeforeParens: Always
+# Use a newline before and after braces for functions and classes
+BreakBeforeBraces: Attach
 ...
