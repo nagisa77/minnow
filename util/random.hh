@@ -2,4 +2,4 @@
 
 #include <random>
 
-std::default_random_engine get_random_engine ();
+std::default_random_engine get_random_engine();

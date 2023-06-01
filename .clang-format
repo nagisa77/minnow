@@ -9,7 +9,7 @@ NamespaceIndentation: All
 # Indent case labels inside switch statements
 IndentCaseLabels: true
 # Add a space between the function name and the opening parenthesis
-SpaceBeforeParens: Always
+SpaceBeforeParens: Never
 # Use a newline before and after braces for functions and classes
 BreakBeforeBraces: Attach
 ...
