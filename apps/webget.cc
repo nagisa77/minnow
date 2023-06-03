@@ -1,13 +1,35 @@
 #include "socket.hh"
-
+#include "address.hh"
 #include <cstdlib>
-#include <iostream>
+#include <iostream> 
 #include <span>
-#include <string>
+#include <sstream>
 
 using namespace std;
 
-void get_URL(const string &host, const string &path) {}
+void get_URL(const string &host, const string &path) {
+  TCPSocket socket;
+  Address addr(host, "http");
+  socket.connect(addr);
+
+  ostringstream oss;
+  oss << "GET " << path << " HTTP/1.1\r\n"
+      << "Host: " << host << "\r\n"
+      << "Connection: close\r\n\r\n";
+  socket.write(oss.str());
+
+  string buffer; 
+  while (true) {
+    socket.read(buffer); 
+    if (socket.eof()) {
+      break;
+    }
+    cout << buffer;
+    buffer.clear();
+  }
+  
+  socket.close();
+}
 
 int main(int argc, char *argv[]) {
   try {
