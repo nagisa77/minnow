@@ -12,7 +12,7 @@ ByteStream::ByteStream(uint64_t capacity) :
 
 void Writer::push(string data) {
   for (size_t i = 0; i < data.size() && bytes_.size() < capacity_; ++i) {
-    bytes_.push_front(data[i]); 
+    bytes_.push_back(data[i]); 
     bytes_pushed_++; 
   }
 }
@@ -37,8 +37,8 @@ uint64_t Writer::bytes_pushed() const {
   return bytes_pushed_;
 }
 
-string_view Reader::peek() const {
-  return "";
+string Reader::peek() const {
+  return string(bytes_.begin(), bytes_.end());
 }
 
 bool Reader::is_finished() const {
@@ -54,7 +54,7 @@ bool Reader::has_error() const {
 
 void Reader::pop(uint64_t len) {
   for (uint64_t i = 0; i < len && !bytes_.empty(); ++i) {
-    bytes_.pop_back();
+    bytes_.pop_front();
     ++bytes_popped_; 
   }
 }
