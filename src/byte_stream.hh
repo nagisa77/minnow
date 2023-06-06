@@ -14,10 +14,10 @@ protected:
   // Please add any additional state to the ByteStream here, and not to the
   // Writer and Reader interfaces.
   std::deque<char> bytes_;
-  bool closed_ = false; 
-  bool has_error_ = false; 
-  uint64_t bytes_popped_ = 0; 
-  uint64_t bytes_pushed_ = 0; 
+  bool closed_ = false;
+  bool has_error_ = false;
+  uint64_t bytes_popped_ = 0;
+  uint64_t bytes_pushed_ = 0;
 
 public:
   explicit ByteStream(uint64_t capacity);
@@ -49,7 +49,7 @@ public:
 class Reader : public ByteStream {
 public:
   std::string peek() const; // Peek at the next bytes in the buffer
-  void pop(uint64_t len);        // Remove `len` bytes from the buffer
+  void pop(uint64_t len);   // Remove `len` bytes from the buffer
 
   bool is_finished() const; // Is the stream finished (closed and fully popped)?
   bool has_error() const;   // Has the stream had an error?

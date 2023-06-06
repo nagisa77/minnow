@@ -86,7 +86,8 @@ void speed_test(
                << setprecision(2) << gigabits_per_second << " Gbit/s\n";
 
   if(gigabits_per_second < 0.05) {
-    throw runtime_error("ByteStream did not meet minimum speed of 0.05 Gbit/s.");
+    throw runtime_error(
+        "ByteStream did not meet minimum speed of 0.05 Gbit/s.");
   }
 }
 

@@ -1,7 +1,7 @@
-#include "socket.hh"
 #include "address.hh"
+#include "socket.hh"
 #include <cstdlib>
-#include <iostream> 
+#include <iostream>
 #include <span>
 #include <sstream>
 
@@ -18,16 +18,16 @@ void get_URL(const string &host, const string &path) {
       << "Connection: close\r\n\r\n";
   socket.write(oss.str());
 
-  string buffer; 
-  while (true) {
-    socket.read(buffer); 
-    if (socket.eof()) {
+  string buffer;
+  while(true) {
+    socket.read(buffer);
+    if(socket.eof()) {
       break;
     }
     cout << buffer;
     buffer.clear();
   }
-  
+
   socket.close();
 }
 
