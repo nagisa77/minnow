@@ -11,10 +11,9 @@ ByteStream::ByteStream(uint64_t capacity) :
 }
 
 void Writer::push(string data) {
-  for (size_t i = 0; i < data.size() && bytes_.size() < capacity_; ++i) {
-    bytes_.push_back(data[i]); 
-    bytes_pushed_++; 
-  }
+  int64_t bytes_pushed = std::min(static_cast<int64_t>(data.size()), static_cast<int64_t>(capacity_ - bytes_.size())); 
+  bytes_pushed_ += bytes_pushed; 
+  bytes_.insert(bytes_.end(), data.begin(), data.begin() + bytes_pushed);
 }
 
 void Writer::close() {
@@ -53,10 +52,9 @@ bool Reader::has_error() const {
 }
 
 void Reader::pop(uint64_t len) {
-  for (uint64_t i = 0; i < len && !bytes_.empty(); ++i) {
-    bytes_.pop_front();
-    ++bytes_popped_; 
-  }
+  uint64_t bytes_popped = std::min(len, bytes_.size()); 
+  bytes_.erase(bytes_.begin(), bytes_.begin() + static_cast<int64_t>(bytes_popped)); 
+  bytes_popped_ += bytes_popped; 
 }
 
 uint64_t Reader::bytes_buffered() const {
