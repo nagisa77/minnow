@@ -11,5 +11,5 @@ IndentCaseLabels: true
 # Add a space between the function name and the opening parenthesis
 SpaceBeforeParens: Never
 # Use a newline before and after braces for functions and classes
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Yes
 ...
