@@ -27,6 +27,8 @@ std::string to_string( const std::optional<T>& v )
 {
   if ( v.has_value() ) {
     return "Some(" + to_string( v.value() ) + ")";
+  } else {
+    return ""; 
   }
 }
 
