@@ -1,11 +1,11 @@
 #pragma once
 
-#include "byte_stream.hh"
-#include "common.hh"
-
 #include <concepts>
 #include <optional>
 #include <utility>
+
+#include "byte_stream.hh"
+#include "common.hh"
 
 static_assert(sizeof(Reader) == sizeof(ByteStream),
               "Please add member variables to the ByteStream base, not the "
@@ -16,7 +16,7 @@ static_assert(sizeof(Writer) == sizeof(ByteStream),
               "ByteStream Writer.");
 
 class ByteStreamTestHarness : public TestHarness<ByteStream> {
-public:
+ public:
   ByteStreamTestHarness(std::string test_name, uint64_t capacity)
       : TestHarness(move(test_name), "capacity=" + std::to_string(capacity),
                     ByteStream{capacity}) {}
@@ -71,16 +71,16 @@ struct Peek : public Expectation<ByteStream> {
     const ByteStream orig = bs;
     std::string got;
 
-    while(bs.reader().bytes_buffered()) {
+    while (bs.reader().bytes_buffered()) {
       auto peeked = bs.reader().peek();
-      if(peeked.empty()) {
+      if (peeked.empty()) {
         throw ExpectationViolation{"Reader::peek() returned empty string_view"};
       }
       got += peeked;
       bs.reader().pop(peeked.size());
     }
 
-    if(got != output_) {
+    if (got != output_) {
       throw ExpectationViolation{"Expected \"" + Printer::prettify(output_) +
                                  "\" in buffer, " + " but found \"" +
                                  Printer::prettify(got) + "\""};
@@ -99,7 +99,7 @@ struct PeekOnce : public Peek {
 
   void execute(ByteStream &bs) const override {
     auto peeked = bs.reader().peek();
-    if(peeked != output_) {
+    if (peeked != output_) {
       throw ExpectationViolation{"Expected exactly \"" +
                                  Printer::prettify(output_) +
                                  "\" at front of stream, " + "but found \"" +
@@ -175,7 +175,7 @@ struct ReadAll : public Expectation<ByteStream> {
   explicit ReadAll(std::string output) : output_(move(output)) {}
 
   std::string description() const override {
-    if(output_.empty()) {
+    if (output_.empty()) {
       return empty_.description();
     }
     return "reading \"" + Printer::prettify(output_) + "\" leaves buffer empty";
@@ -184,7 +184,7 @@ struct ReadAll : public Expectation<ByteStream> {
   void execute(ByteStream &bs) const override {
     std::string got;
     read(bs.reader(), output_.size(), got);
-    if(got != output_) {
+    if (got != output_) {
       throw ExpectationViolation{
           "Expected to read \"" + Printer::prettify(output_) +
           "\", but found \"" + Printer::prettify(got) + "\""};

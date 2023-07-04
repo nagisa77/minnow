@@ -1,5 +1,3 @@
-#include "reassembler.hh"
-
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -10,20 +8,22 @@
 #include <random>
 #include <tuple>
 
+#include "reassembler.hh"
+
 using namespace std;
 using namespace std::chrono;
 
 void speed_test(
-    const size_t num_chunks,  // NOLINT(bugprone-easily-swappable-parameters)
-    const size_t capacity,    // NOLINT(bugprone-easily-swappable-parameters)
-    const size_t random_seed) // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t num_chunks,   // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t capacity,     // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t random_seed)  // NOLINT(bugprone-easily-swappable-parameters)
 {
   // Generate the data to be written
   const string data = [&] {
     default_random_engine rd{random_seed};
     uniform_int_distribution<char> ud;
     string ret;
-    for(size_t i = 0; i < num_chunks * capacity; ++i) {
+    for (size_t i = 0; i < num_chunks * capacity; ++i) {
       ret += ud(rd);
     }
     return ret;
@@ -31,7 +31,7 @@ void speed_test(
 
   // Split the data into segments before writing
   queue<tuple<uint64_t, string, bool>> split_data;
-  for(size_t i = 0; i < data.size(); i += capacity) {
+  for (size_t i = 0; i < data.size(); i += capacity) {
     split_data.emplace(i + 2, data.substr(i + 2, capacity * 2),
                        i + 2 + capacity * 2 >= data.size());
     split_data.emplace(i, data.substr(i, capacity * 2),
@@ -47,13 +47,13 @@ void speed_test(
   output_data.reserve(data.size());
 
   const auto start_time = steady_clock::now();
-  while(not split_data.empty()) {
+  while (not split_data.empty()) {
     auto &next = split_data.front();
     reassembler.insert(get<uint64_t>(next), move(get<string>(next)),
                        get<bool>(next), stream.writer());
     split_data.pop();
 
-    while(stream.reader().bytes_buffered()) {
+    while (stream.reader().bytes_buffered()) {
       output_data += stream.reader().peek();
       stream.reader().pop(output_data.size() - stream.reader().bytes_popped());
     }
@@ -61,11 +61,11 @@ void speed_test(
 
   const auto stop_time = steady_clock::now();
 
-  if(not stream.reader().is_finished()) {
+  if (not stream.reader().is_finished()) {
     throw runtime_error("Reassembler did not close ByteStream when finished");
   }
 
-  if(data != output_data) {
+  if (data != output_data) {
     throw runtime_error("Mismatch between data written and read");
   }
 
@@ -84,7 +84,7 @@ void speed_test(
   debug_output << "             Reassembler throughput: " << fixed
                << setprecision(2) << gigabits_per_second << " Gbit/s\n";
 
-  if(gigabits_per_second < 0.1) {
+  if (gigabits_per_second < 0.1) {
     throw runtime_error(
         "Reassembler did not meet minimum speed of 0.1 Gbit/s.");
   }
@@ -95,7 +95,7 @@ void program_body() { speed_test(10000, 1500, 1370); }
 int main() {
   try {
     program_body();
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << "Exception: " << e.what() << "\n";
     return EXIT_FAILURE;
   }

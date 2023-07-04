@@ -1,6 +1,7 @@
 #include "reassembler.hh"
-#include <set>
+
 #include <cassert>
+#include <set>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ void Reassembler::insert(uint64_t first_index, string data,
     }
 
     if (segments_map_.find(first_index) != segments_map_.end()) {
-      bytes_pending_ -= segments_map_[first_index].size(); 
+      bytes_pending_ -= segments_map_[first_index].size();
     }
     segments_map_[first_index] = cut_data;
 
@@ -34,9 +35,9 @@ void Reassembler::insert(uint64_t first_index, string data,
   checkout_write(output);
 }
 
-std::pair<uint64_t, std::string>
-Reassembler::string_splitter(uint64_t first_index, const std::string &data,
-                             uint64_t available_capacity) {
+std::pair<uint64_t, std::string> Reassembler::string_splitter(
+    uint64_t first_index, const std::string &data,
+    uint64_t available_capacity) {
   available_capacity = min(last_index_ - first_index_, available_capacity);
   if (first_index + data.size() <= first_index_ ||
       first_index >= first_index_ + available_capacity) {
@@ -45,9 +46,9 @@ Reassembler::string_splitter(uint64_t first_index, const std::string &data,
   string f_data;
   if (first_index < first_index_) {
     if (first_index + data.size() > first_index_ + available_capacity) {
-      f_data = string{data.begin() + first_index_ - first_index,
-                      data.begin() + first_index_ - first_index +
-                          available_capacity};
+      f_data = string{
+          data.begin() + first_index_ - first_index,
+          data.begin() + first_index_ - first_index + available_capacity};
     } else {
       f_data = string{data.begin() + first_index_ - first_index, data.end()};
     }
@@ -62,9 +63,9 @@ Reassembler::string_splitter(uint64_t first_index, const std::string &data,
   return {std::max(first_index, first_index_), f_data};
 }
 
-Reassembler::segment_relation
-Reassembler::get_segment_relation(uint64_t left_index, uint64_t left_len,
-                                  uint64_t right_index, uint64_t right_len) {
+Reassembler::segment_relation Reassembler::get_segment_relation(
+    uint64_t left_index, uint64_t left_len, uint64_t right_index,
+    uint64_t right_len) {
   if (left_index + left_len < right_index) {
     return Reassembler::noncoincidence;
   } else if (left_index + left_len >= right_index &&
@@ -87,55 +88,54 @@ std::string Reassembler::merge_segment(uint64_t left_index,
 
 void Reassembler::merge_segments(uint64_t index, uint64_t segment_len) {
   auto iter = segments_map_.find(index);
-  assert(iter != segments_map_.end()); 
+  assert(iter != segments_map_.end());
   if (iter != segments_map_.begin()) {
-    --iter; 
+    --iter;
   }
-  std::vector<uint64_t> possible_keys; 
-  for (; iter != segments_map_.end() && iter->first <= index + segment_len; ++iter) {
+  std::vector<uint64_t> possible_keys;
+  for (; iter != segments_map_.end() && iter->first <= index + segment_len;
+       ++iter) {
     if (iter->first == index) {
-      continue; 
+      continue;
     }
-    possible_keys.push_back(iter->first); 
+    possible_keys.push_back(iter->first);
   }
   for (uint64_t cur_index : possible_keys) {
-    uint64_t left_index = 0, left_len = 0, right_index = 0, right_len = 0;    
+    uint64_t left_index = 0, left_len = 0, right_index = 0, right_len = 0;
     if (index < cur_index) {
-      left_index = index; 
-      left_len = segment_len; 
+      left_index = index;
+      left_len = segment_len;
       right_index = cur_index;
       right_len = segments_map_[cur_index].size();
     } else {
-      right_index = index; 
-      right_len = segment_len; 
+      right_index = index;
+      right_len = segment_len;
       left_index = cur_index;
       left_len = segments_map_[cur_index].size();
     }
-    Reassembler::segment_relation relation = get_segment_relation(left_index,
-                                                                  left_len,
-                                                                  right_index,
-                                                                  right_len);
+    Reassembler::segment_relation relation =
+        get_segment_relation(left_index, left_len, right_index, right_len);
     if (relation == Reassembler::contain) {
       bytes_pending_ -= segments_map_[right_index].size();
-      segments_map_.erase(right_index); 
+      segments_map_.erase(right_index);
 
-      index = left_index; 
-      segment_len = segments_map_[index].size(); 
+      index = left_index;
+      segment_len = segments_map_[index].size();
     } else if (relation == Reassembler::intersect) {
-      std::string merged_seg = merge_segment(left_index, right_index); 
+      std::string merged_seg = merge_segment(left_index, right_index);
 
       bytes_pending_ -= segments_map_[left_index].size();
-      segments_map_.erase(left_index); 
+      segments_map_.erase(left_index);
 
       bytes_pending_ -= segments_map_[right_index].size();
-      segments_map_.erase(right_index); 
+      segments_map_.erase(right_index);
 
-      segments_map_[left_index] = merged_seg; 
+      segments_map_[left_index] = merged_seg;
       bytes_pending_ += segments_map_[left_index].size();
 
-      index = left_index; 
-      segment_len = segments_map_[index].size(); 
-    }   
+      index = left_index;
+      segment_len = segments_map_[index].size();
+    }
   }
 }
 

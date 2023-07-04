@@ -1,13 +1,14 @@
 #include "socket.hh"
 
-#include "exception.hh"
-
-#include <cstddef>
 #include <linux/if_packet.h>
 #include <net/if.h>
-#include <stdexcept>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+#include <cstddef>
+#include <stdexcept>
+
+#include "exception.hh"
 
 using namespace std;
 
@@ -26,26 +27,26 @@ Socket::Socket(const int domain, const int type, const int protocol)
 //! wrong value is supplied \param[in] protocol is `fd`'s protocol; throws
 //! std::runtime_error if wrong value is supplied
 Socket::Socket(FileDescriptor &&fd, int domain, int type,
-               int protocol) // NOLINT(*-swappable-parameters)
+               int protocol)  // NOLINT(*-swappable-parameters)
     : FileDescriptor(move(fd)) {
   int actual_value{};
   socklen_t len{};
 
   // verify domain
   len = getsockopt(SOL_SOCKET, SO_DOMAIN, actual_value);
-  if((len != sizeof(actual_value)) or (actual_value != domain)) {
+  if ((len != sizeof(actual_value)) or (actual_value != domain)) {
     throw runtime_error("socket domain mismatch");
   }
 
   // verify type
   len = getsockopt(SOL_SOCKET, SO_TYPE, actual_value);
-  if((len != sizeof(actual_value)) or (actual_value != type)) {
+  if ((len != sizeof(actual_value)) or (actual_value != type)) {
     throw runtime_error("socket type mismatch");
   }
 
   // verify protocol
   len = getsockopt(SOL_SOCKET, SO_PROTOCOL, actual_value);
-  if((len != sizeof(actual_value)) or (actual_value != protocol)) {
+  if ((len != sizeof(actual_value)) or (actual_value != protocol)) {
     throw runtime_error("socket protocol mismatch");
   }
 }
@@ -96,7 +97,7 @@ void Socket::connect(const Address &address) {
 //! [shutdown(2)](\ref man2::shutdown)
 void Socket::shutdown(const int how) {
   CheckSystemCall("shutdown", ::shutdown(fd_num(), how));
-  switch(how) {
+  switch (how) {
     case SHUT_RD:
       register_read();
       break;
@@ -126,7 +127,7 @@ void DatagramSocket::recv(Address &source_address, string &payload) {
       "recvfrom", ::recvfrom(fd_num(), payload.data(), payload.size(),
                              MSG_TRUNC, datagram_source_address, &fromlen));
 
-  if(recv_len > static_cast<ssize_t>(payload.size())) {
+  if (recv_len > static_cast<ssize_t>(payload.size())) {
     throw runtime_error("recvfrom (oversized datagram)");
   }
 
@@ -204,11 +205,11 @@ void Socket::set_reuseaddr() {
 void Socket::throw_if_error() const {
   int socket_error = 0;
   const socklen_t len = getsockopt(SOL_SOCKET, SO_ERROR, socket_error);
-  if(len != sizeof(socket_error)) {
+  if (len != sizeof(socket_error)) {
     throw runtime_error("unexpected length from getsockopt: " + to_string(len));
   }
 
-  if(socket_error) {
+  if (socket_error) {
     throw unix_error("socket error", socket_error);
   }
 }

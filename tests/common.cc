@@ -1,8 +1,9 @@
 #include "common.hh"
 
+#include <unistd.h>
+
 #include <iomanip>
 #include <iostream>
-#include <unistd.h>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ void Printer::diagnostic(std::string_view test_name,
   cerr << "\nThe test " << quote << Printer::with_color(Printer::def, test_name)
        << quote << " failed after these steps:\n\n";
   unsigned int step_num = 0;
-  for(const auto &[str, col] : steps_executed) {
+  for (const auto &[str, col] : steps_executed) {
     cerr << "  " << step_num++ << "."
          << "\t" << with_color(col, str) << "\n";
   }
@@ -39,7 +40,7 @@ string Printer::prettify(string_view str, size_t max_length) {
   //   ss << "...";
   // }
   // return ss.str();
-  return std::string(str); 
+  return std::string(str);
 }
 
 Printer::Printer()
@@ -47,13 +48,13 @@ Printer::Printer()
 
 string Printer::with_color(int color_value, string_view str) const {
   string ret;
-  if(is_terminal_) {
+  if (is_terminal_) {
     ret += "\033[1;" + to_string(color_value) + "m";
   }
 
   ret += str;
 
-  if(is_terminal_) {
+  if (is_terminal_) {
     ret += "\033[m";
   }
 

@@ -1,7 +1,7 @@
+#include "byte_stream.hh"
+
 #include <cmath>
 #include <stdexcept>
-
-#include "byte_stream.hh"
 
 using namespace std;
 
@@ -30,7 +30,7 @@ uint64_t Writer::bytes_pushed() const { return bytes_pushed_; }
 string Reader::peek() const { return string(bytes_.begin(), bytes_.end()); }
 
 bool Reader::is_finished() const {
-  if(!closed_) {
+  if (!closed_) {
     return false;
   }
   return bytes_.empty();

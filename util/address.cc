@@ -1,34 +1,35 @@
 #include "address.hh"
 
-#include "exception.hh"
-
 #include <arpa/inet.h>
+#include <linux/if_packet.h>
+#include <netdb.h>
+
 #include <array>
 #include <cstring>
-#include <linux/if_packet.h>
 #include <memory>
-#include <netdb.h>
 #include <stdexcept>
 #include <system_error>
+
+#include "exception.hh"
 
 using namespace std;
 
 //! Converts Raw to `sockaddr *`.
 Address::Raw::operator sockaddr *() {
-  return reinterpret_cast<sockaddr *>(&storage); // NOLINT(*-reinterpret-cast)
+  return reinterpret_cast<sockaddr *>(&storage);  // NOLINT(*-reinterpret-cast)
 }
 
 //! Converts Raw to `const sockaddr *`.
 Address::Raw::operator const sockaddr *() const {
   return reinterpret_cast<const sockaddr *>(
-      &storage); // NOLINT(*-reinterpret-cast)
+      &storage);  // NOLINT(*-reinterpret-cast)
 }
 
 //! \param[in] addr points to a raw socket address
 //! \param[in] size is `addr`'s length
 Address::Address(const sockaddr *addr, const size_t size) : _size(size) {
   // make sure proposed sockaddr can fit
-  if(size > sizeof(_address.storage)) {
+  if (size > sizeof(_address.storage)) {
     throw runtime_error("invalid sockaddr size");
   }
 
@@ -37,7 +38,7 @@ Address::Address(const sockaddr *addr, const size_t size) : _size(size) {
 
 //! Error category for getaddrinfo and getnameinfo failures.
 class gai_error_category : public error_category {
-public:
+ public:
   //! The name of the wrapped error
   const char *name() const noexcept override { return "gai_error_category"; }
   //! \brief An error message
@@ -61,13 +62,13 @@ Address::Address(const string &node, const string &service,
   // look up the name or names
   const int gai_ret =
       getaddrinfo(node.c_str(), service.c_str(), &hints, &resolved_address);
-  if(gai_ret != 0) {
+  if (gai_ret != 0) {
     throw tagged_error(gai_error_category(),
                        "getaddrinfo(" + node + ", " + service + ")", gai_ret);
   }
 
   // if success, should always have at least one entry
-  if(resolved_address == nullptr) {
+  if (resolved_address == nullptr) {
     throw runtime_error(
         "getaddrinfo returned successfully but with no results");
   }
@@ -87,10 +88,10 @@ Address::Address(const string &node, const string &service,
 //! in the [struct addrinfo](\ref man3::getaddrinfo) \param[in] ai_family is the
 //! value of the `ai_family` field in the [struct addrinfo](\ref
 //! man3::getaddrinfo)
-static inline addrinfo
-make_hints(int ai_flags, int ai_family) // NOLINT(*-swappable-parameters)
+static inline addrinfo make_hints(
+    int ai_flags, int ai_family)  // NOLINT(*-swappable-parameters)
 {
-  addrinfo hints{}; // value initialized to all zeros
+  addrinfo hints{};  // value initialized to all zeros
   hints.ai_flags = ai_flags;
   hints.ai_family = ai_family;
   return hints;
@@ -116,7 +117,7 @@ pair<string, uint16_t> Address::ip_port() const {
   const int gni_ret = getnameinfo(static_cast<const sockaddr *>(_address),
                                   _size, ip.data(), ip.size(), port.data(),
                                   port.size(), NI_NUMERICHOST | NI_NUMERICSERV);
-  if(gni_ret != 0) {
+  if (gni_ret != 0) {
     throw tagged_error(gai_error_category(), "getnameinfo", gni_ret);
   }
 
@@ -129,7 +130,7 @@ string Address::to_string() const {
 }
 
 uint32_t Address::ipv4_numeric() const {
-  if(_address.storage.ss_family != AF_INET or _size != sizeof(sockaddr_in)) {
+  if (_address.storage.ss_family != AF_INET or _size != sizeof(sockaddr_in)) {
     throw runtime_error("ipv4_numeric called on non-IPV4 address");
   }
 
@@ -145,12 +146,12 @@ Address Address::from_ipv4_numeric(const uint32_t ip_address) {
   ipv4_addr.sin_addr.s_addr = htobe32(ip_address);
 
   return {reinterpret_cast<sockaddr *>(&ipv4_addr),
-          sizeof(ipv4_addr)}; // NOLINT(*-reinterpret-cast)
+          sizeof(ipv4_addr)};  // NOLINT(*-reinterpret-cast)
 }
 
 // equality
 bool Address::operator==(const Address &other) const {
-  if(_size != other._size) {
+  if (_size != other._size) {
     return false;
   }
 
@@ -158,24 +159,29 @@ bool Address::operator==(const Address &other) const {
 }
 
 // address families that correspond to each sockaddr type
-template <typename sockaddr_type> constexpr int sockaddr_family = -1;
+template <typename sockaddr_type>
+constexpr int sockaddr_family = -1;
 
-template <> constexpr int sockaddr_family<sockaddr_in> = AF_INET;
+template <>
+constexpr int sockaddr_family<sockaddr_in> = AF_INET;
 
-template <> constexpr int sockaddr_family<sockaddr_in6> = AF_INET6;
+template <>
+constexpr int sockaddr_family<sockaddr_in6> = AF_INET6;
 
-template <> constexpr int sockaddr_family<sockaddr_ll> = AF_PACKET;
+template <>
+constexpr int sockaddr_family<sockaddr_ll> = AF_PACKET;
 
 // safely cast the address to its underlying sockaddr type
-template <typename sockaddr_type> const sockaddr_type *Address::as() const {
+template <typename sockaddr_type>
+const sockaddr_type *Address::as() const {
   const sockaddr *raw{_address};
-  if(sizeof(sockaddr_type) < size() or
-     raw->sa_family != sockaddr_family<sockaddr_type>) {
+  if (sizeof(sockaddr_type) < size() or
+      raw->sa_family != sockaddr_family<sockaddr_type>) {
     throw std::runtime_error("Address::as() conversion failure");
   }
 
   return reinterpret_cast<const sockaddr_type *>(
-      raw); // NOLINT(*-reinterpret-cast)
+      raw);  // NOLINT(*-reinterpret-cast)
 }
 
 template const sockaddr_in *Address::as<sockaddr_in>() const;

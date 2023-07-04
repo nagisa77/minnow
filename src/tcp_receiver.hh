@@ -18,5 +18,5 @@ class TCPReceiver {
 
  private:
   std::optional<Wrap32> zero_point_{};
-  uint64_t checkpoint_ = 0; 
+  uint64_t checkpoint_ = 0;
 };

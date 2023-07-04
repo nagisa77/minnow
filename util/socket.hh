@@ -1,23 +1,24 @@
 #pragma once
 
-#include "address.hh"
-#include "file_descriptor.hh"
+#include <sys/socket.h>
 
 #include <cstdint>
 #include <functional>
-#include <sys/socket.h>
+
+#include "address.hh"
+#include "file_descriptor.hh"
 
 //! \brief Base class for network sockets (TCP, UDP, etc.)
 //! \details Socket is generally used via a subclass. See TCPSocket and
 //! UDPSocket for usage examples.
 class Socket : public FileDescriptor {
-private:
+ private:
   //! Get the local or peer address the socket is connected to
   Address get_address(
       const std::string &name_of_function,
       const std::function<int(int, sockaddr *, socklen_t *)> &function) const;
 
-protected:
+ protected:
   //! Construct via [socket(2)](\ref man2::socket)
   Socket(int domain, int type, int protocol = 0);
 
@@ -34,7 +35,7 @@ protected:
 
   void setsockopt(int level, int option, std::string_view option_val);
 
-public:
+ public:
   //! Bind a socket to a specified address with [bind(2)](\ref man2::bind),
   //! usually for listen/accept
   void bind(const Address &address);
@@ -65,7 +66,7 @@ public:
 class DatagramSocket : public Socket {
   using Socket::Socket;
 
-public:
+ public:
   //! Receive a datagram and the Address of its sender
   void recv(Address &source_address, std::string &payload);
 
@@ -83,20 +84,20 @@ class UDPSocket : public DatagramSocket {
   explicit UDPSocket(FileDescriptor &&fd)
       : DatagramSocket(std::move(fd), AF_INET, SOCK_DGRAM) {}
 
-public:
+ public:
   //! Default: construct an unbound, unconnected UDP socket
   UDPSocket() : DatagramSocket(AF_INET, SOCK_DGRAM) {}
 };
 
 //! A wrapper around [TCP sockets](\ref man7::tcp)
 class TCPSocket : public Socket {
-private:
+ private:
   //! \brief Construct from FileDescriptor (used by accept())
   //! \param[in] fd is the FileDescriptor from which to construct
   explicit TCPSocket(FileDescriptor &&fd)
       : Socket(std::move(fd), AF_INET, SOCK_STREAM) {}
 
-public:
+ public:
   //! Default: construct an unbound, unconnected TCP socket
   TCPSocket() : Socket(AF_INET, SOCK_STREAM) {}
 
@@ -109,7 +110,7 @@ public:
 
 //! A wrapper around [packet sockets](\ref man7:packet)
 class PacketSocket : public DatagramSocket {
-public:
+ public:
   PacketSocket(const int type, const int protocol)
       : DatagramSocket(AF_PACKET, type, protocol) {}
 

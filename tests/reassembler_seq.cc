@@ -1,7 +1,7 @@
-#include "reassembler_test_harness.hh"
-
 #include <exception>
 #include <iostream>
+
+#include "reassembler_test_harness.hh"
 
 using namespace std;
 
@@ -38,7 +38,7 @@ int main() {
       ReassemblerTestHarness test{"seq 3", 65000};
       std::ostringstream ss;
 
-      for(size_t i = 0; i < 100; ++i) {
+      for (size_t i = 0; i < 100; ++i) {
         test.execute(BytesPushed(4 * i));
         test.execute(Insert{"abcd", 4 * i});
         test.execute(IsFinished{false});
@@ -52,7 +52,7 @@ int main() {
 
     {
       ReassemblerTestHarness test{"seq 4", 65000};
-      for(size_t i = 0; i < 100; ++i) {
+      for (size_t i = 0; i < 100; ++i) {
         test.execute(BytesPushed(4 * i));
         test.execute(Insert{"abcd", 4 * i});
         test.execute(IsFinished{false});
@@ -61,7 +61,7 @@ int main() {
       }
     }
 
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << "Exception: " << e.what() << endl;
     return EXIT_FAILURE;
   }

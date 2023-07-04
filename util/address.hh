@@ -1,39 +1,40 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+
+#include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
-#include <sys/socket.h>
 #include <utility>
 
 //! Wrapper around [IPv4 addresses](@ref man7::ip) and DNS operations.
 class Address {
-public:
+ public:
   //! \brief Wrapper around [sockaddr_storage](@ref man7::socket).
   //! \details A `sockaddr_storage` is enough space to store any socket address
   //! (IPv4 or IPv6).
   class Raw {
-  public:
-    sockaddr_storage storage{}; //!< The wrapped struct itself.
+   public:
+    sockaddr_storage storage{};  //!< The wrapped struct itself.
     // NOLINTBEGIN (*-explicit-*)
     operator sockaddr *();
     operator const sockaddr *() const;
     // NOLINTEND (*-explicit-*)
   };
 
-private:
-  socklen_t _size; //!< Size of the wrapped address.
-  Raw _address{};  //!< A wrapped [sockaddr_storage](@ref man7::socket)
-                   //!< containing the address.
+ private:
+  socklen_t _size;  //!< Size of the wrapped address.
+  Raw _address{};   //!< A wrapped [sockaddr_storage](@ref man7::socket)
+                    //!< containing the address.
 
   //! Constructor from ip/host, service/port, and hints to the resolver.
   Address(const std::string &node, const std::string &service,
           const addrinfo &hints);
 
-public:
+ public:
   //! Construct by resolving a hostname and servicename.
   Address(const std::string &hostname, const std::string &service);
 
@@ -73,9 +74,10 @@ public:
   //! Const pointer to the underlying socket address storage.
   operator const sockaddr *() const {
     return static_cast<const sockaddr *>(_address);
-  } // NOLINT(*-explicit-*)
+  }  // NOLINT(*-explicit-*)
   //! Safely convert to underlying sockaddr type
-  template <typename sockaddr_type> const sockaddr_type *as() const;
+  template <typename sockaddr_type>
+  const sockaddr_type *as() const;
 
   //!@}
 };

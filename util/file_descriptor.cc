@@ -1,26 +1,27 @@
 #include "file_descriptor.hh"
 
-#include "exception.hh"
-
-#include <algorithm>
 #include <fcntl.h>
-#include <iostream>
-#include <stdexcept>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <iostream>
+#include <stdexcept>
+
+#include "exception.hh"
 
 using namespace std;
 
 template <typename T>
 T FileDescriptor::FDWrapper::CheckSystemCall(string_view s_attempt,
                                              T return_value) const {
-  if(return_value >= 0) {
+  if (return_value >= 0) {
     return return_value;
   }
 
-  if(non_blocking_ and (errno == EAGAIN or errno == EINPROGRESS)) {
+  if (non_blocking_ and (errno == EAGAIN or errno == EINPROGRESS)) {
     return 0;
   }
 
@@ -30,7 +31,7 @@ T FileDescriptor::FDWrapper::CheckSystemCall(string_view s_attempt,
 template <typename T>
 T FileDescriptor::CheckSystemCall(std::string_view s_attempt,
                                   T return_value) const {
-  if(not internal_fd_) {
+  if (not internal_fd_) {
     throw runtime_error("internal error: missing internal_fd_");
   }
   return internal_fd_->CheckSystemCall(s_attempt, return_value);
@@ -39,13 +40,13 @@ T FileDescriptor::CheckSystemCall(std::string_view s_attempt,
 // fd is the file descriptor number returned by [open(2)](\ref man2::open) or
 // similar
 FileDescriptor::FDWrapper::FDWrapper(int fd) : fd_(fd) {
-  if(fd < 0) {
+  if (fd < 0) {
     throw runtime_error("invalid fd number:" + to_string(fd));
   }
 
   const int flags =
-      CheckSystemCall("fcntl", fcntl(fd, F_GETFL)); // NOLINT(*-vararg)
-  non_blocking_ = flags & O_NONBLOCK;               // NOLINT(*-bitwise)
+      CheckSystemCall("fcntl", fcntl(fd, F_GETFL));  // NOLINT(*-vararg)
+  non_blocking_ = flags & O_NONBLOCK;                // NOLINT(*-bitwise)
 }
 
 void FileDescriptor::FDWrapper::close() {
@@ -55,11 +56,11 @@ void FileDescriptor::FDWrapper::close() {
 
 FileDescriptor::FDWrapper::~FDWrapper() {
   try {
-    if(closed_) {
+    if (closed_) {
       return;
     }
     close();
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     // don't throw an exception from the destructor
     cerr << "Exception destructing FDWrapper: " << e.what() << endl;
   }
@@ -85,9 +86,9 @@ void FileDescriptor::read(string &buffer) {
   buffer.resize(kReadBufferSize);
 
   const ssize_t bytes_read = ::read(fd_num(), buffer.data(), buffer.size());
-  if(bytes_read < 0) {
-    if(internal_fd_->non_blocking_ and
-       (errno == EAGAIN or errno == EINPROGRESS)) {
+  if (bytes_read < 0) {
+    if (internal_fd_->non_blocking_ and
+        (errno == EAGAIN or errno == EINPROGRESS)) {
       return;
     }
     throw unix_error{"read"};
@@ -95,11 +96,11 @@ void FileDescriptor::read(string &buffer) {
 
   register_read();
 
-  if(bytes_read == 0) {
+  if (bytes_read == 0) {
     internal_fd_->eof_ = true;
   }
 
-  if(bytes_read > static_cast<ssize_t>(buffer.size())) {
+  if (bytes_read > static_cast<ssize_t>(buffer.size())) {
     throw runtime_error("read() read more than requested");
   }
 
@@ -107,7 +108,7 @@ void FileDescriptor::read(string &buffer) {
 }
 
 void FileDescriptor::read(vector<unique_ptr<string>> &buffers) {
-  if(buffers.empty()) {
+  if (buffers.empty()) {
     return;
   }
 
@@ -117,17 +118,17 @@ void FileDescriptor::read(vector<unique_ptr<string>> &buffers) {
   vector<iovec> iovecs;
   iovecs.reserve(buffers.size());
   size_t total_size = 0;
-  for(const auto &x : buffers) {
+  for (const auto &x : buffers) {
     iovecs.push_back(
-        {const_cast<char *>(x->data()), x->size()}); // NOLINT(*-const-cast)
+        {const_cast<char *>(x->data()), x->size()});  // NOLINT(*-const-cast)
     total_size += x->size();
   }
 
   const ssize_t bytes_read =
       ::readv(fd_num(), iovecs.data(), static_cast<int>(iovecs.size()));
-  if(bytes_read < 0) {
-    if(internal_fd_->non_blocking_ and
-       (errno == EAGAIN or errno == EINPROGRESS)) {
+  if (bytes_read < 0) {
+    if (internal_fd_->non_blocking_ and
+        (errno == EAGAIN or errno == EINPROGRESS)) {
       return;
     }
     throw unix_error{"read"};
@@ -135,15 +136,15 @@ void FileDescriptor::read(vector<unique_ptr<string>> &buffers) {
 
   register_read();
 
-  if(bytes_read > static_cast<ssize_t>(total_size)) {
+  if (bytes_read > static_cast<ssize_t>(total_size)) {
     throw runtime_error("read() read more than requested");
   }
 
   size_t remaining_size = bytes_read;
-  for(auto &buf : buffers) {
-    if(remaining_size <= buf->size()) {
+  for (auto &buf : buffers) {
+    if (remaining_size <= buf->size()) {
       remaining_size -= buf->size();
-    } else if(remaining_size == 0) {
+    } else if (remaining_size == 0) {
       buf->clear();
     } else {
       buf->resize(remaining_size);
@@ -160,22 +161,22 @@ size_t FileDescriptor::write(const vector<string_view> &buffers) {
   vector<iovec> iovecs;
   iovecs.reserve(buffers.size());
   size_t total_size = 0;
-  for(const auto x : buffers) {
+  for (const auto x : buffers) {
     iovecs.push_back(
-        {const_cast<char *>(x.data()), x.size()}); // NOLINT(*-const-cast)
+        {const_cast<char *>(x.data()), x.size()});  // NOLINT(*-const-cast)
     total_size += x.size();
   }
 
-  const ssize_t bytes_written =
-      CheckSystemCall("writev", ::writev(fd_num(), iovecs.data(),
-                                         static_cast<int>(iovecs.size())));
+  const ssize_t bytes_written = CheckSystemCall(
+      "writev",
+      ::writev(fd_num(), iovecs.data(), static_cast<int>(iovecs.size())));
   register_write();
 
-  if(bytes_written == 0 and total_size != 0) {
+  if (bytes_written == 0 and total_size != 0) {
     throw runtime_error("write returned 0 given non-empty input buffer");
   }
 
-  if(bytes_written > static_cast<ssize_t>(total_size)) {
+  if (bytes_written > static_cast<ssize_t>(total_size)) {
     throw runtime_error("write wrote more than length of input buffer");
   }
 
@@ -184,14 +185,15 @@ size_t FileDescriptor::write(const vector<string_view> &buffers) {
 
 void FileDescriptor::set_blocking(bool blocking) {
   int flags =
-      CheckSystemCall("fcntl", fcntl(fd_num(), F_GETFL)); // NOLINT(*-vararg)
-  if(blocking) {
-    flags ^= (flags & O_NONBLOCK); // NOLINT(*-bitwise)
+      CheckSystemCall("fcntl", fcntl(fd_num(), F_GETFL));  // NOLINT(*-vararg)
+  if (blocking) {
+    flags ^= (flags & O_NONBLOCK);  // NOLINT(*-bitwise)
   } else {
-    flags |= O_NONBLOCK; // NOLINT(*-bitwise)
+    flags |= O_NONBLOCK;  // NOLINT(*-bitwise)
   }
 
-  CheckSystemCall("fcntl", fcntl(fd_num(), F_SETFL, flags)); // NOLINT(*-vararg)
+  CheckSystemCall("fcntl",
+                  fcntl(fd_num(), F_SETFL, flags));  // NOLINT(*-vararg)
 
   internal_fd_->non_blocking_ = not blocking;
 }

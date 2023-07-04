@@ -1,12 +1,12 @@
 #pragma once
 
-#include "byte_stream_test_harness.hh"
-#include "common.hh"
-#include "reassembler.hh"
-
 #include <optional>
 #include <sstream>
 #include <utility>
+
+#include "byte_stream_test_harness.hh"
+#include "common.hh"
+#include "reassembler.hh"
 
 using StreamAndReassembler = std::pair<ByteStream, Reassembler>;
 
@@ -27,7 +27,7 @@ struct ReassemblerByteStreamTestStep : public TestStep<StreamAndReassembler> {
 };
 
 class ReassemblerTestHarness : public TestHarness<StreamAndReassembler> {
-public:
+ public:
   ReassemblerTestHarness(std::string test_name, uint64_t capacity)
       : TestHarness(move(test_name), "capacity=" + std::to_string(capacity),
                     {ByteStream{capacity}, Reassembler{}}) {}
@@ -66,7 +66,7 @@ struct Insert : public Action<StreamAndReassembler> {
     std::ostringstream ss;
     ss << "insert \"" << Printer::prettify(data_) << "\" @ index "
        << first_index_;
-    if(is_last_substring_) {
+    if (is_last_substring_) {
       ss << " [last substring]";
     }
     return ss.str();

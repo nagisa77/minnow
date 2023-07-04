@@ -1,8 +1,8 @@
-#include "random.hh"
-#include "reassembler_test_harness.hh"
-
 #include <exception>
 #include <iostream>
+
+#include "random.hh"
+#include "reassembler_test_harness.hh"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ int main() {
       test.execute(IsFinished{false});
       string data = "abcdefgh";
 
-      for(size_t i = 0; i < 1000; ++i) {
+      for (size_t i = 0; i < 1000; ++i) {
         const size_t start_i = uniform_int_distribution<size_t>{0, 8}(rd);
         auto start = data.begin();
         std::advance(start, start_i);
@@ -87,7 +87,7 @@ int main() {
       test.execute(IsFinished{false});
     }
 
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << "Exception: " << e.what() << endl;
     return EXIT_FAILURE;
   }

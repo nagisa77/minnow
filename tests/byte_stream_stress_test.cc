@@ -1,21 +1,21 @@
-#include "byte_stream_test_harness.hh"
-
 #include <iostream>
 #include <random>
+
+#include "byte_stream_test_harness.hh"
 
 using namespace std;
 
 void stress_test(
-    const size_t input_len,   // NOLINT(bugprone-easily-swappable-parameters)
-    const size_t capacity,    // NOLINT(bugprone-easily-swappable-parameters)
-    const size_t random_seed) // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t input_len,    // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t capacity,     // NOLINT(bugprone-easily-swappable-parameters)
+    const size_t random_seed)  // NOLINT(bugprone-easily-swappable-parameters)
 {
   default_random_engine rd{random_seed};
 
   const string data = [&rd, &input_len] {
     uniform_int_distribution<char> ud;
     string ret;
-    for(size_t i = 0; i < input_len; ++i) {
+    for (size_t i = 0; i < input_len; ++i) {
       ret += ud(rd);
     }
     return ret;
@@ -28,8 +28,8 @@ void stress_test(
   size_t expected_bytes_pushed{};
   size_t expected_bytes_popped{};
   size_t expected_available_capacity{capacity};
-  while(expected_bytes_pushed < data.size() or
-        expected_bytes_popped < data.size()) {
+  while (expected_bytes_pushed < data.size() or
+         expected_bytes_popped < data.size()) {
     bs.execute(BytesPushed{expected_bytes_pushed});
     bs.execute(BytesPopped{expected_bytes_popped});
     bs.execute(AvailableCapacity{expected_available_capacity});
@@ -47,16 +47,16 @@ void stress_test(
     bs.execute(BytesPushed{expected_bytes_pushed});
     bs.execute(AvailableCapacity{expected_available_capacity});
 
-    if(expected_bytes_pushed == data.size()) {
+    if (expected_bytes_pushed == data.size()) {
       bs.execute(Close{});
     }
 
     /* read something */
     const size_t peek_size = bs.peek_size();
-    if((expected_bytes_pushed != expected_bytes_popped) and peek_size == 0) {
+    if ((expected_bytes_pushed != expected_bytes_popped) and peek_size == 0) {
       throw runtime_error("ByteStream::reader().peek() returned empty view");
     }
-    if(expected_bytes_popped + peek_size > expected_bytes_pushed) {
+    if (expected_bytes_popped + peek_size > expected_bytes_pushed) {
       throw runtime_error(
           "ByteStream::reader().peek() returned too-large view");
     }
@@ -86,7 +86,7 @@ void program_body() {
 int main() {
   try {
     program_body();
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << "Exception: " << e.what() << "\n";
     return EXIT_FAILURE;
   }

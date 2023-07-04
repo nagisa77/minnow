@@ -1,12 +1,12 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "byte_stream.hh"
 
-#include <string>
-#include <map> 
-
 class Reassembler {
-public:
+ public:
   /*
    * Insert a new substring to be reassembled into a ByteStream.
    *   `first_index`: the index of the first byte of the substring
@@ -35,24 +35,25 @@ public:
   // How many bytes are stored in the Reassembler itself?
   uint64_t bytes_pending() const;
 
-private:
+ private:
   enum segment_relation {
-    intersect, 
-    noncoincidence, 
+    intersect,
+    noncoincidence,
     contain,
-  }; 
+  };
 
-  std::pair<uint64_t, std::string> string_splitter(uint64_t first_index, 
-                                                   const std::string& data, 
-                                                   uint64_t available_capacity); 
-  segment_relation get_segment_relation(uint64_t left_index, uint64_t left_len, 
-                                        uint64_t right_index, uint64_t right_len); 
-  void merge_segments(uint64_t index, uint64_t segment_len); 
-  std::string merge_segment(uint64_t left_index, uint64_t right_index); 
-  void checkout_write(Writer &output); 
+  std::pair<uint64_t, std::string> string_splitter(uint64_t first_index,
+                                                   const std::string &data,
+                                                   uint64_t available_capacity);
+  segment_relation get_segment_relation(uint64_t left_index, uint64_t left_len,
+                                        uint64_t right_index,
+                                        uint64_t right_len);
+  void merge_segments(uint64_t index, uint64_t segment_len);
+  std::string merge_segment(uint64_t left_index, uint64_t right_index);
+  void checkout_write(Writer &output);
 
-  std::map<uint64_t, std::string> segments_map_; 
-  uint64_t first_index_ = 0; 
-  uint64_t bytes_pending_ = 0; 
-  uint64_t last_index_ = UINT64_MAX; 
+  std::map<uint64_t, std::string> segments_map_;
+  uint64_t first_index_ = 0;
+  uint64_t bytes_pending_ = 0;
+  uint64_t last_index_ = UINT64_MAX;
 };

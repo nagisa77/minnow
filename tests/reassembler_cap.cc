@@ -1,7 +1,7 @@
-#include "reassembler_test_harness.hh"
-
 #include <exception>
 #include <iostream>
+
+#include "reassembler_test_harness.hh"
 
 using namespace std;
 
@@ -97,7 +97,7 @@ int main() {
       test.execute(ReadAll("c"));
     }
 
-  } catch(const exception &e) {
+  } catch (const exception &e) {
     cerr << "Exception: " << e.what() << endl;
     return EXIT_FAILURE;
   }
