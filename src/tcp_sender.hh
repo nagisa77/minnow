@@ -4,9 +4,25 @@
 #include "tcp_receiver_message.hh"
 #include "tcp_sender_message.hh"
 
+#include <map> 
+
 class TCPSender {
   Wrap32 isn_;
   uint64_t initial_RTO_ms_;
+  uint16_t window_size_ = 1; 
+  uint64_t flight_checkpoint_ = 0; 
+  uint64_t outstanding_checkpoint_ = 0; 
+  bool syn_send_ = false; 
+  bool fin_send_ = false; 
+  std::map<uint64_t, TCPSenderMessage> flight_message_map_; 
+  std::map<uint64_t, TCPSenderMessage> outstanding_message_map_; 
+  uint64_t bytes_flight_ = 0; 
+
+  // resend
+  size_t ms_since_first_tick_ = 0; 
+  bool clock_started_ = false; 
+  uint64_t current_RT0_ms_;
+  uint64_t retransmissions_ = 0;
 
  public:
   /* Construct TCP sender with given default Retransmission Timeout and possible
